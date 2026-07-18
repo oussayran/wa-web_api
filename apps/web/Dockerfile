@@ -11,7 +11,7 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build --workspace @whatsapp-connector/web
 
-FROM nginxinc/nginx-unprivileged:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 ENV NGINX_ENVSUBST_FILTER="^(CSP_API_ORIGIN|CSP_WS_ORIGIN)$"
 COPY apps/web/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
