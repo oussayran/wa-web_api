@@ -18,7 +18,7 @@
     "db:seed": "npm run db:seed --workspace @whatsapp-connector/api"
   },
   "devDependencies": {
-    "concurrently": "9.2.0"
+    "concurrently": "10.0.3"
   },
   "engines": {
     "node": ">=20.19.0",
