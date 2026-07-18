@@ -1,0 +1,27 @@
+{
+  "name": "whatsapp-connector",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "setup:env": "node scripts/create-env.mjs",
+    "build": "npm run build --workspace @whatsapp-connector/api && npm run build --workspace @whatsapp-connector/web",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev --workspace @whatsapp-connector/api\" \"npm run dev --workspace @whatsapp-connector/web\"",
+    "test": "npm run test --workspace @whatsapp-connector/api && npm run test --workspace @whatsapp-connector/web",
+    "typecheck": "npm run typecheck --workspace @whatsapp-connector/api && npm run typecheck --workspace @whatsapp-connector/web",
+    "db:generate": "npm run db:generate --workspace @whatsapp-connector/api",
+    "db:migrate": "npm run db:migrate --workspace @whatsapp-connector/api",
+    "db:seed": "npm run db:seed --workspace @whatsapp-connector/api"
+  },
+  "devDependencies": {
+    "concurrently": "9.2.0"
+  },
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=10.0.0"
+  }
+}

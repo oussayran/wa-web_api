@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-cream-300;
+  }
+
+  html {
+    @apply bg-cream-100 text-ink antialiased;
+  }
+
+  body {
+    @apply m-0 min-w-[320px] bg-cream-100 font-sans;
+  }
+
+  ::selection {
+    @apply bg-forest-800 text-cream-50;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-sm border border-cream-300 bg-cream-50 shadow-panel;
+  }
+
+  .panel-dark {
+    @apply rounded-sm border border-white/10 bg-forest-900 text-cream-100 shadow-lift;
+  }
+
+  .eyebrow {
+    @apply font-mono text-[10px] font-semibold uppercase tracking-[0.23em] text-forest-600;
+  }
+
+  .field-label {
+    @apply mb-2 block text-sm font-semibold text-ink;
+  }
+
+  .field-hint {
+    @apply mt-1.5 text-xs leading-5 text-stone-500;
+  }
+
+  .input {
+    @apply w-full rounded-sm border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-stone-400 hover:border-stone-400 focus:border-forest-600 focus:ring-2 focus:ring-forest-600/20 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-500;
+  }
+
+  .select {
+    @apply input appearance-none pr-10;
+    background-image: linear-gradient(45deg, transparent 50%, #1d4a3c 50%), linear-gradient(135deg, #1d4a3c 50%, transparent 50%);
+    background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 13px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-forest-900 bg-forest-900 px-4 py-2 text-sm font-semibold text-cream-50 shadow-sm transition hover:border-forest-700 hover:bg-forest-700 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:ring-offset-2 focus:ring-offset-cream-100 disabled:cursor-not-allowed disabled:border-stone-300 disabled:bg-stone-300 disabled:text-stone-500 disabled:shadow-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-forest-700 bg-transparent px-4 py-2 text-sm font-semibold text-forest-800 transition hover:bg-forest-800 hover:text-cream-50 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:ring-offset-2 focus:ring-offset-cream-100 disabled:cursor-not-allowed disabled:border-stone-300 disabled:text-stone-400 disabled:hover:bg-transparent;
+  }
+
+  .btn-ghost {
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-sm px-3 py-1.5 font-semibold text-forest-800 transition hover:bg-cream-200 focus:outline-none focus:ring-2 focus:ring-forest-700 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-red-300 bg-red-50 px-4 py-2 text-sm font-semibold text-red-800 transition hover:border-red-800 hover:bg-red-800 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2 focus:ring-offset-cream-100 disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .status-badge {
+    @apply inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-[0.12em];
+  }
+
+  .error-alert {
+    @apply flex gap-2.5 rounded-sm border border-red-300 bg-red-50 px-4 py-3 text-sm leading-5 text-red-900;
+  }
+
+  .platform-warning {
+    @apply flex gap-3 rounded-sm border border-amber-300 bg-amber-50 px-4 py-3.5 text-sm leading-6 text-amber-950;
+  }
+
+  .nav-link {
+    @apply inline-flex shrink-0 items-center gap-3 rounded-sm border border-transparent px-3.5 py-2.5 text-xs font-medium text-cream-300 transition hover:bg-white/5 hover:text-white focus-ring-dark lg:mb-1 lg:flex lg:w-full;
+  }
+
+  .nav-link-active {
+    @apply border-signal/20 bg-signal/10 text-signal;
+  }
+
+  .focus-ring-dark {
+    @apply rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-signal focus-visible:ring-offset-2 focus-visible:ring-offset-forest-950;
+  }
+
+  .spinner {
+    @apply inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent;
+  }
+
+  .data-label {
+    @apply font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-stone-500;
+  }
+}
+
+.console-grid {
+  background-image: linear-gradient(rgba(184, 227, 109, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(184, 227, 109, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+}
+
+.login-radar::before,
+.login-radar::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(184, 227, 109, 0.17);
+  border-radius: 9999px;
+  inset: 17%;
+}
+
+.login-radar::after {
+  inset: 30%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  ADMIN
+}
+
+enum ConnectionStatus {
+  DISCONNECTED
+  INITIALIZING
+  WAITING_FOR_QR
+  CONNECTING
+  CONNECTED
+  RECONNECTING
+  LOGGED_OUT
+  ERROR
+}
+
+enum MessageDirection {
+  OUTBOUND
+}
+
+enum MessageStatus {
+  QUEUED
+  ACCEPTED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model AdminUser {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  role         AdminRole      @default(ADMIN)
+  isActive     Boolean        @default(true)
+  sessions     AdminSession[]
+  messages     Message[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model AdminSession {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  csrfHash  String
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model WhatsAppInstance {
+  id                 String             @id
+  name               String
+  status             ConnectionStatus   @default(DISCONNECTED)
+  connectedPhone     String?
+  connectedJid       String?
+  lastConnectedAt    DateTime?
+  lastDisconnectedAt DateTime?
+  lastErrorCode      String?
+  lastErrorMessage   String?
+  reconnectAttempts  Int                @default(0)
+  authState          WhatsAppAuthState[]
+  messages           Message[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model WhatsAppAuthState {
+  id                String           @id @default(uuid())
+  instanceId        String
+  instance          WhatsAppInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  authKey           String
+  encryptedPayload  Bytes
+  iv                Bytes
+  authTag           Bytes
+  encryptionVersion Int              @default(1)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@unique([instanceId, authKey])
+  @@index([instanceId])
+}
+
+model Message {
+  id                  String             @id @default(uuid())
+  instanceId          String
+  instance            WhatsAppInstance   @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  adminUserId         String
+  adminUser           AdminUser          @relation(fields: [adminUserId], references: [id], onDelete: Restrict)
+  direction           MessageDirection   @default(OUTBOUND)
+  recipientNumber     String
+  recipientJid        String
+  textPreview         String?
+  encryptedText       Bytes?
+  externalMessageId   String?
+  idempotencyKey      String
+  status              MessageStatus      @default(QUEUED)
+  errorCode            String?
+  errorMessage         String?
+  consentConfirmed    Boolean
+  createdAt            DateTime           @default(now())
+  sentAt               DateTime?
+  deliveredAt          DateTime?
+  readAt               DateTime?
+  failedAt             DateTime?
+  updatedAt            DateTime           @updatedAt
+
+  @@unique([adminUserId, instanceId, idempotencyKey])
+  @@index([instanceId, createdAt])
+  @@index([externalMessageId])
+  @@index([status])
+}
+
+model AuditLog {
+  id            String     @id @default(uuid())
+  adminUserId   String?
+  adminUser     AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+  action        String
+  entityType    String?
+  entityId      String?
+  safeMetadata  Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime   @default(now())
+
+  @@index([adminUserId, createdAt])
+  @@index([action, createdAt])
+}
