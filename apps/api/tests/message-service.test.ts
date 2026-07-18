@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { pino } from 'pino';
 import { AuditService } from '../src/services/audit.service.js';
 import { RateLimitService } from '../src/services/rate-limit.service.js';
 import { EncryptionService } from '../src/utils/encryption.js';
@@ -27,6 +28,7 @@ describe('message idempotency', () => {
       new AuditService(database.client),
       new RateLimitService(),
       config,
+      pino({ level: 'silent' }),
       new ProviderEventBus(),
     );
     const adminUserId = database.users[0]!.id;
