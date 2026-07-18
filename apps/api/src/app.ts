@@ -50,7 +50,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   const provider = options.provider ?? new BaileysWhatsAppProvider(prisma, encryption, eventBus, audit, logger);
   const auth = new AuthService(prisma, config.SESSION_SECRET);
   const rateLimits = new RateLimitService();
-  const messages = new MessageService(prisma, provider, encryption, audit, rateLimits, config, eventBus);
+  const messages = new MessageService(prisma, provider, encryption, audit, rateLimits, config, logger, eventBus);
   const retention = new RetentionService(prisma, config.MESSAGE_RETENTION_DAYS, config.IDEMPOTENCY_RETENTION_HOURS, logger);
   const app = Fastify({
     loggerInstance: logger as FastifyBaseLogger,

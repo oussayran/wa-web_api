@@ -1,5 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { MessageStatus, type PrismaClient } from '@prisma/client';
+import { MessageDirection, MessageStatus, type PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { AppError } from '../../errors/app-error.js';
 import { textMessageSchema } from '../../utils/message-validation.js';
@@ -35,8 +35,10 @@ function requestContext(request: FastifyRequest) {
 function serializeMessage(message: {
   id: string;
   recipientNumber: string;
+  senderNumber: string | null;
   textPreview: string | null;
   status: MessageStatus;
+  direction: MessageDirection;
   errorCode: string | null;
   errorMessage: string | null;
   createdAt: Date;
@@ -46,7 +48,9 @@ function serializeMessage(message: {
 }) {
   return {
     id: message.id,
+    direction: message.direction,
     recipient: message.recipientNumber,
+    sender: message.senderNumber,
     preview: message.textPreview,
     status: message.status,
     error: message.errorMessage ? { code: message.errorCode, message: message.errorMessage } : null,

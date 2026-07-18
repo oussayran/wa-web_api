@@ -23,6 +23,7 @@ enum ConnectionStatus {
 }
 
 enum MessageDirection {
+  INBOUND
   OUTBOUND
 }
 
@@ -99,19 +100,21 @@ model Message {
   id                  String             @id @default(uuid())
   instanceId          String
   instance            WhatsAppInstance   @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  adminUserId         String
-  adminUser           AdminUser          @relation(fields: [adminUserId], references: [id], onDelete: Restrict)
+  adminUserId         String?
+  adminUser           AdminUser?         @relation(fields: [adminUserId], references: [id], onDelete: Restrict)
   direction           MessageDirection   @default(OUTBOUND)
   recipientNumber     String
   recipientJid        String
+  senderNumber        String?
+  senderJid           String?
   textPreview         String?
   encryptedText       Bytes?
   externalMessageId   String?
-  idempotencyKey      String
+  idempotencyKey      String?
   status              MessageStatus      @default(QUEUED)
   errorCode            String?
   errorMessage         String?
-  consentConfirmed    Boolean
+  consentConfirmed    Boolean?
   createdAt            DateTime           @default(now())
   sentAt               DateTime?
   deliveredAt          DateTime?

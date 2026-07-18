@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { Prisma, type Message, type MessageStatus, type PrismaClient } from '@prisma/client';
+import type { Logger } from 'pino';
+import { Prisma, type Message, type MessageStatus, type PrismaClient, type MessageDirection } from '@prisma/client';
 import type { AppConfig } from '../../config/env.js';
 import { AppError, ERROR_CODES, toAppError, type ErrorCode } from '../../errors/app-error.js';
 import type { AuditService } from '../../services/audit.service.js';
@@ -33,11 +34,14 @@ export class MessageService {
     private readonly audit: AuditService,
     private readonly rateLimits: RateLimitService,
     private readonly config: AppConfig,
+    private readonly logger: Logger,
     eventBus: ProviderEventBus,
   ) {
     this.unsubscribe = eventBus.subscribe((event) => {
       if (event.event === 'message.status') {
         void this.applyProviderStatus(event.externalMessageId, event.status, new Date(event.timestamp));
+      } else if (event.event === 'message.new') {
+        void this.storeIncoming(event);
       }
     });
   }
@@ -197,6 +201,47 @@ export class MessageService {
         ...(status === 'FAILED' ? { failedAt: at, errorCode: 'MESSAGE_SEND_FAILED', errorMessage: 'WhatsApp reported a send failure.' } : {}),
       },
     });
+  }
+
+  private async storeIncoming(event: { instanceId: string; externalMessageId: string; senderJid: string; senderNumber: string; text: string; timestamp: string }): Promise<void> {
+    try {
+      const instance = await this.prisma.whatsAppInstance.findUnique({
+        where: { id: event.instanceId },
+        select: { connectedPhone: true, connectedJid: true },
+      });
+      if (!instance?.connectedJid) {
+        this.logger.warn({ instanceId: event.instanceId }, 'Cannot store incoming message: instance has no connected JID');
+        return;
+      }
+
+      const senderNumber = event.senderNumber;
+
+      const message = await this.prisma.message.create({
+        data: {
+          instanceId: event.instanceId,
+          direction: 'INBOUND' as MessageDirection,
+          recipientNumber: instance.connectedPhone ?? senderNumber,
+          recipientJid: instance.connectedJid,
+          senderNumber,
+          senderJid: event.senderJid,
+          textPreview: createTextPreview(event.text),
+          encryptedText: this.config.STORE_FULL_MESSAGE_TEXT ? this.encryption.encryptPacked(event.text) : null,
+          externalMessageId: event.externalMessageId,
+          status: 'SENT',
+          sentAt: new Date(event.timestamp),
+          consentConfirmed: null,
+        },
+      });
+
+      await this.audit.record({
+        action: 'MESSAGE_RECEIVED',
+        entityType: 'Message',
+        entityId: message.id,
+        safeMetadata: { instanceId: event.instanceId },
+      });
+    } catch (error) {
+      this.logger.error({ err: error, instanceId: event.instanceId }, 'Failed to store incoming message');
+    }
   }
 
   private auditContext(context: SendContext) {

@@ -35,7 +35,8 @@ export type ProviderEvent =
   | { event: 'whatsapp.connected'; instanceId: string; status: 'CONNECTED'; connectedPhone?: string; timestamp: string }
   | { event: 'whatsapp.disconnected'; instanceId: string; status: ConnectionStatus; timestamp: string }
   | { event: 'whatsapp.error'; instanceId: string; code: string; message: string; timestamp: string }
-  | { event: 'message.status'; instanceId: string; externalMessageId: string; status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED'; timestamp: string };
+  | { event: 'message.status'; instanceId: string; externalMessageId: string; status: 'SENT' | 'DELIVERED' | 'READ' | 'FAILED'; timestamp: string }
+  | { event: 'message.new'; instanceId: string; externalMessageId: string; senderJid: string; senderNumber: string; text: string; timestamp: string };
 
 export interface WhatsAppProvider {
   initialize(): Promise<void>;

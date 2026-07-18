@@ -6,6 +6,7 @@ import {
   BufferJSON,
   DisconnectReason,
   fetchLatestBaileysVersion,
+  getContentType,
   initAuthCreds,
   jidNormalizedUser,
   makeCacheableSignalKeyStore,
@@ -161,6 +162,50 @@ export class BaileysWhatsAppProvider implements WhatsAppProvider {
             timestamp: new Date().toISOString(),
           });
         }
+      }
+    });
+    socket.ev.on('messages.upsert', ({ messages, type }) => {
+      if (type !== 'notify') return;
+      for (const msg of messages) {
+        if (msg.key?.fromMe || !msg.key?.id || !msg.message) continue;
+        const content = getContentType(msg.message);
+        if (!content) continue;
+        const text = msg.message.conversation
+          || (msg.message.extendedTextMessage?.text ?? '')
+          || (msg.message.imageMessage?.caption ?? '')
+          || (msg.message.videoMessage?.caption ?? '')
+          || '';
+        if (!text) continue;
+        const msgKeyId = msg.key.id;
+        const senderJid = msg.key.participant
+          ? jidNormalizedUser(msg.key.participant)
+          : jidNormalizedUser(msg.key.remoteJid!);
+        const stripDevice = (jid: string): string => jid.replace(/:(\d+)(@|$)/, '$2');
+        void (async () => {
+          let senderNumber: string;
+          if (senderJid.endsWith('@s.whatsapp.net')) {
+            senderNumber = senderJid.split('@')[0]!;
+          } else {
+            senderNumber = senderJid.replace(/@lid$/, '');
+            try {
+              const pnJid = await socket.signalRepository?.lidMapping?.getPNForLID(senderJid);
+              if (pnJid?.endsWith('@s.whatsapp.net')) {
+                senderNumber = pnJid.split('@')[0]!;
+              }
+            } catch { /* fallback to LID digits */ }
+          }
+          senderNumber = stripDevice(senderNumber);
+          this.logger.info({ instanceId, senderJid, senderNumber, preview: text.slice(0, 20) }, 'message.new emitted');
+          this.events.emit({
+            event: 'message.new',
+            instanceId,
+            externalMessageId: msgKeyId,
+            senderJid,
+            senderNumber,
+            text,
+            timestamp: new Date().toISOString(),
+          });
+        })();
       }
     });
   }

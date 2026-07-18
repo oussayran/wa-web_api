@@ -10,6 +10,8 @@ export type ConnectionStatus =
 
 export type MessageStatus = 'QUEUED' | 'ACCEPTED' | 'SENT' | 'DELIVERED' | 'READ' | 'FAILED';
 
+export type MessageDirection = 'INBOUND' | 'OUTBOUND';
+
 export interface Admin {
   id: string;
   email: string;
@@ -48,7 +50,9 @@ export interface SendResult {
 
 export interface MessageRecord {
   id: string;
+  direction: MessageDirection;
   recipient: string;
+  sender: string | null;
   preview: string | null;
   status: MessageStatus;
   error: { code: string | null; message: string } | null;
@@ -110,5 +114,15 @@ export interface MessageStatusEvent {
   instanceId: string;
   externalMessageId: string;
   status: Extract<MessageStatus, 'SENT' | 'DELIVERED' | 'READ' | 'FAILED'>;
+  timestamp: string;
+}
+
+export interface MessageNewEvent {
+  event: 'message.new';
+  instanceId: string;
+  externalMessageId: string;
+  senderJid: string;
+  senderNumber: string;
+  text: string;
   timestamp: string;
 }
